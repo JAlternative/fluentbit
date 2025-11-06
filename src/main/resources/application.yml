@@ -1,2 +1,7 @@
+spring:
+  application:
+    name: fluentbit_local
+    version: 2517
+
 server:
   port: 9095
