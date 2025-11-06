@@ -64,6 +64,20 @@ services:
       OPENSEARCH_HOSTS: '["http://opensearch-node1:9200","http://opensearch-node2:9200"]'
     networks:
       - opensearch-net
+  fluent-bit:
+    image: cr.fluentbit.io/fluent/fluent-bit:2.2
+    container_name: fluent-bit
+    command: [ "-c", "/fluent-bit/etc/fluent-bit.conf" ]
+    volumes:
+      - "/Users/java/Desktop/Java/FluentBit/fluentbit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro"
+      - "/Users/java/Desktop/Java/FluentBit/logs:/var/log/app:ro"
+      - "./state:/fluent-bit/state"
+    ports:
+      - "2020:2020"
+    depends_on:
+      - opensearch-node1
+    networks:
+      - opensearch-net
 
 volumes:
   opensearch-data1:
