@@ -14,6 +14,7 @@ import java.util.UUID;
 @RestController
 @Slf4j
 public class FluentBitController {
+    private static int minus_hours = 60 * 60 * 10;
 
     @GetMapping("/user-audit")
     public String userAudit() {
@@ -39,8 +40,10 @@ public class FluentBitController {
     @GetMapping("/sys-audit")
     public String sysAudit() {
         String requestId = UUID.randomUUID().toString();
+        String time = Instant.now().minusSeconds(minus_hours).toString();
 
         Map<String, Object> fields = Map.of(
+                "application_timestamp", time,
                 "category", "REST_API_AUDIT",
                 "request_id", requestId,
                 "class", "demo.TestLogController",
