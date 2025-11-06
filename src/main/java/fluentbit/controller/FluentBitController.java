@@ -5,6 +5,7 @@ import net.logstash.logback.argument.StructuredArguments;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -28,10 +29,10 @@ public class FluentBitController {
                 "aomn_shortname", "Qwerty",
                 "document", "ПСП и привязка ТПС – ПСП.ПСП – физические",
                 "operation", "Редактирование записей",
-                "message", "Обновить ПСП по ID"
+                "@timestamp", Instant.now().toString()
         );
 
-        log.info("USER_AUDIT {}", StructuredArguments.entries(fields));
+        log.info("Обновить ПСП по ID", StructuredArguments.entries(fields));
         return requestId;
     }
 
@@ -43,10 +44,10 @@ public class FluentBitController {
                 "category", "REST_API_AUDIT",
                 "request_id", requestId,
                 "class", "demo.TestLogController",
-                "message", "Системное событие: обновление конфигурации"
+                "@timestamp", Instant.now().toString()
         );
 
-        log.info("SYS_AUDIT {}", StructuredArguments.entries(fields));
+        log.info("Системное событие тест", StructuredArguments.entries(fields));
         return requestId;
     }
 
@@ -85,8 +86,9 @@ public class FluentBitController {
 
         Map<String, Object> out = new LinkedHashMap<>(k8s);
         out.putAll(extra);
+        out.put("@timestamp", Instant.now().toString());
 
-        log.info("CONTAINER_LOG {}", StructuredArguments.entries(out));
+        log.info("CONTAINER_LOG Message Test", StructuredArguments.entries(out));
         return requestId;
     }
 

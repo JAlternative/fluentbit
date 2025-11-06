@@ -1,0 +1,35 @@
+PUT https://localhost:9200/_index_template/index_ep-dev-k8s_evoera_template
+{
+  "index_patterns": ["index_ep-dev-k8s_evoera-*"],
+  "priority": 1,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp"            : { "type": "date" },
+        "application_timestamp" : { "type": "date" },
+        "level"                 : { "type": "keyword" },
+        "application_name"      : { "type": "keyword" },
+        "application_version"   : { "type": "keyword" },
+        "fqdn"                  : { "type": "keyword" },
+        "pid"                   : { "type": "integer" },
+        "request_id"            : { "type": "keyword" },
+        "user_id"               : { "type": "keyword" },
+        "user_login"            : { "type": "keyword" },
+        "user_fio"              : { "type": "keyword" },
+        "user_ip"               : { "type": "ip" },
+        "aomn_id"               : { "type": "keyword" },
+        "aomn_shortname"        : { "type": "keyword" },
+        "category"              : { "type": "keyword" },
+        "document"              : { "type": "text" },
+        "operation"             : { "type": "keyword" },
+        "class"                 : { "type": "keyword" },
+        "message"               : { "type": "text" }
+
+      }
+    }
+  }
+}
