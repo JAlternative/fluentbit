@@ -15,17 +15,14 @@ import java.util.UUID;
 public class FluentBitController {
 
     @GetMapping("/user-audit")
-    public String userAudit(
-            @RequestParam(defaultValue = "test") String userLogin,
-            @RequestParam(defaultValue = "00000000-0000-0000-0000-000000000001") String userId
-    ) {
+    public String userAudit() {
         String requestId = UUID.randomUUID().toString();
 
         Map<String, Object> fields = Map.of(
                 "category", "USER_AUDIT",
                 "request_id", requestId,
-                "user_login", userLogin,
-                "user_id", userId,
+                "user_login", "test",
+                "user_id", "00000000-0000-0000-0000-000000000001",
                 "user_fio", "Testov",
                 "aomn_id", "1",
                 "aomn_shortname", "Qwerty",
@@ -39,15 +36,12 @@ public class FluentBitController {
     }
 
     @GetMapping("/sys-audit")
-    public String sysAudit(
-            @RequestParam(defaultValue = "SYSTEM") String source
-    ) {
+    public String sysAudit() {
         String requestId = UUID.randomUUID().toString();
 
         Map<String, Object> fields = Map.of(
                 "category", "REST_API_AUDIT",
                 "request_id", requestId,
-                "source", source,
                 "class", "demo.TestLogController",
                 "message", "Системное событие: обновление конфигурации"
         );
