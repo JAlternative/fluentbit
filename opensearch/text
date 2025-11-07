@@ -1,0 +1,265 @@
+Здравствуйте, прошу вас разделить данные аудита действий пользователя и системных событий на разные файлы индексов.
+
+Dev() : разделить данные index_ep-dev-k8s_evoera на (index_ep-dev-k8s_evoera-sys-audit + политика хранение) и (index_ep-dev-k8s_evoera-user-audit).
+Цель. Разделить поток логов на два набора индексов и повесить разную политику:
+
+index_ep-dev-k8s_evoera-user-audit-* — храним бессрочно.
+index_ep-dev-k8s_evoera-sys-audit-* — удаляем по политике (DEV/PREPROD/PROD — 3 месяца).
+
+Что просим применить:
+
+-----------------------------------------------------------------------------------------
+1) Шаблоны индексов:
+
+1.1 - Создание шаблона индекса для index_ep-dev-k8s_evoera-user-audit-*
+PUT _index_template/index_ep-dev-k8s_evoera-user-audit
+
+{
+  "index_patterns": ["index_ep-dev-k8s_evoera-user-audit-*"],
+  "priority": 99,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp"            : { "type": "date" },
+        "application_timestamp" : { "type": "date" },
+        "level"                 : { "type": "keyword" },
+        "application_name"      : { "type": "keyword" },
+        "application_version"   : { "type": "keyword" },
+        "fqdn"                  : { "type": "keyword" },
+        "pid"                   : { "type": "integer" },
+        "request_id"            : { "type": "keyword" },
+        "user_id"               : { "type": "keyword" },
+        "user_login"            : { "type": "keyword" },
+        "user_fio"              : { "type": "keyword" },
+        "user_ip"               : { "type": "ip" },
+        "aomn_id"               : { "type": "keyword" },
+        "aomn_shortname"        : { "type": "keyword" },
+        "category"              : { "type": "keyword" },
+        "document"              : { "type": "text" },
+        "operation"             : { "type": "keyword" },
+        "class"                 : { "type": "keyword" },
+        "message"               : { "type": "text" }
+      }
+    }
+  }
+}
+
+
+1.2 - Создание шаблона индекса для index_ep-dev-k8s_evoera-sys-audit-*
+
+PUT _index_template/index_ep-dev-k8s_evoera-sys-audit_template
+
+{
+  "index_patterns": ["index_ep-dev-k8s_evoera-sys-audit-*"],
+  "priority": 1,
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1,
+      "index.plugins.index_state_management.policy_id": "delete_after_90_days"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp"            : { "type": "date" },
+        "application_timestamp" : { "type": "date" },
+        "level"                 : { "type": "keyword" },
+        "application_name"      : { "type": "keyword" },
+        "application_version"   : { "type": "keyword" },
+        "fqdn"                  : { "type": "keyword" },
+        "pid"                   : { "type": "integer" },
+        "request_id"            : { "type": "keyword" },
+        "user_id"               : { "type": "keyword" },
+        "user_login"            : { "type": "keyword" },
+        "user_fio"              : { "type": "keyword" },
+        "user_ip"               : { "type": "ip" },
+        "aomn_id"               : { "type": "keyword" },
+        "aomn_shortname"        : { "type": "keyword" },
+        "category"              : { "type": "keyword" },
+        "document"              : { "type": "text" },
+        "operation"             : { "type": "keyword" },
+        "class"                 : { "type": "keyword" },
+        "message"               : { "type": "text" }
+      }
+    }
+  }
+}
+-----------------------------------------------------------------------------------------
+
+2) Политика удаления индекса index_ep-dev-k8s_evoera-sys-audit-*:
+
+# Получить полное тело политики удаления
+2.1 GET _plugins/_ism/policies/delete_after_90_days?pretty
+
+# Обновить эту же политику, добавив наш паттерн к уже существующим (не удаляя старые элементы массива index_patterns),
+Взять оттуда ключи if_seq_no и if_primary_term и добавить новый паттерн index_ep-dev-k8s_evoera-sys-audit-*
+2.2 _plugins/_ism/policies/delete_after_90_days?if_seq_no=121&if_primary_term=1&pretty
+
+{
+  "policy": {
+    "policy_id": "delete_after_90_days",
+    "description": "Удаление индекса через 90 дней после создания",
+    "default_state": "hot",
+    "states": [
+      {
+        "name": "hot",
+        "actions": [],
+        "transitions": [
+          {
+            "state_name": "delete",
+            "conditions": { "min_index_age": "90d" }
+          }
+        ]
+      },
+      {
+        "name": "delete",
+        "actions": [
+          {
+            "retry": { "count": 3, "backoff": "exponential", "delay": "1m" },
+            "delete": {}
+          }
+        ],
+        "transitions": []
+      }
+    ],
+    "ism_template": [
+      {
+        "index_patterns": [
+          "index_evoera-int_incoming_message-*",
+          "index_ep-dev-k8s_evoera-sys-audit-*"
+          ------------------------------------------------------------НЕ ПОТЕРЯТЬ ВСЕ index_patterns из ответа
+        ],
+        "priority": 90
+      }
+    ]
+  }
+}
+
+-----------------------------------------------------------------------------------------
+
+3. Создание индексов
+
+PUT index_ep-dev-k8s_evoera-user-audit-06.11.2025
+PUT index_ep-dev-k8s_evoera-sys-audit-02.11.2025
+
+-----------------------------------------------------------------------------------------
+4. Проверить, что политика применилась к индексу index_ep-dev-k8s_evoera-sys-audit-*
+GET index_ep-dev-k8s_evoera-sys-audit-02.11.2025/_settings
+
+-----------------------------------------------------------------------------------------
+
+
+
+5. Fluent Bit (агент) - как настроен локально:
+В боевой конфигурации включить фильтр rewrite_tag ровно как в локальном примере (см. нижн) и настроить два OUTPUT в OpenSearch:
+Match evoera.user → Logstash_Prefix index_ep-dev-k8s_evoera-user-audit
+Match evoera.app → Logstash_Prefix index_ep-dev-k8s_evoera-sys-audit
+
+5.1. Изначально файл был с таким содержимым:
+
+[SERVICE]
+    Parsers_File  /fluent-bit/etc/parsers.conf
+    Log_Level     info
+    Flush         1
+    HTTP_Server   On
+    HTTP_Listen   0.0.0.0
+    HTTP_Port     2020
+    storage.path  /fluent-bit/state
+
+[INPUT]
+    Name                tail
+    Path                /var/log/app/app-json.log
+    Tag                 evoera.app
+    Parser              json
+    Read_From_Head      On
+    Skip_Long_Lines     On
+    Refresh_Interval    1
+    Mem_Buf_Limit       10MB
+    storage.type        filesystem
+
+[OUTPUT]
+    Name                es
+    Match               evoera.*
+    Host                opensearch-node1
+    Port                9200
+    tls                 Off
+    Logstash_Format     On
+    Logstash_Prefix     index_ep-dev-k8s_evoera
+    Logstash_DateFormat %d.%m.%Y
+    Suppress_Type_Name  On
+    Replace_Dots        On
+    Time_Key            application_timestamp
+    Time_Key_Format     %Y-%m-%dT%H:%M:%S.%LZ
+    Trace_Error         On
+    Retry_Limit         False
+
+
+Все шло в один префикс index_ep-dev-k8s_evoera.
+
+
+5.2. В файл добавлено фильтр по категории и 2 output, в зависимости от того, какая по итогу будет категория:
+
+[SERVICE]
+    Parsers_File  /fluent-bit/etc/parsers.conf
+    Log_Level     info
+    Flush         1
+    HTTP_Server   On
+    HTTP_Listen   0.0.0.0
+    HTTP_Port     2020
+    storage.path  /fluent-bit/state
+
+[INPUT]
+    Name                tail
+    Path                /var/log/app/app-json.log
+    Tag                 evoera.app
+    Parser              json
+    Read_From_Head      On
+    Skip_Long_Lines     On
+    Refresh_Interval    10
+    Mem_Buf_Limit       10MB
+    storage.type        filesystem
+
+[FILTER]
+    Name   rewrite_tag
+    Match  evoera.app
+    Rule   $category ^USER_AUDIT$  evoera.user  false   # если category == USER_AUDIT - ставим тег evoera.user; false = не оставляем старый тег (без дубля в оба индекса)
+
+# USER_AUDIT - user-audit*
+[OUTPUT]
+    Name                es
+    Match               evoera.user
+    Host                opensearch-node1
+    Port                9200
+    tls                 Off
+    Logstash_Format     On
+    Logstash_Prefix     index_ep-dev-k8s_evoera-user-audit
+    Logstash_DateFormat %d.%m.%Y
+    Suppress_Type_Name  On
+    Replace_Dots        On
+    Time_Key            application_timestamp
+    Time_Key_Format     %Y-%m-%dT%H:%M:%S.%LZ
+    Trace_Error         On
+    Retry_Limit         False
+
+# всё остальное - sys-audit*
+[OUTPUT]
+    Name                es
+    Match               evoera.app
+    Host                opensearch-node1
+    Port                9200
+    tls                 Off
+    Logstash_Format     On
+    Logstash_Prefix     index_ep-dev-k8s_evoera-sys-audit
+    Logstash_DateFormat %d.%m.%Y
+    Suppress_Type_Name  On
+    Replace_Dots        On
+    Time_Key            application_timestamp
+    Time_Key_Format     %Y-%m-%dT%H:%M:%S.%LZ
+    Trace_Error         On
+    Retry_Limit         False
+
+
+После применённых изменений записи с category=USER_AUDIT идут в *-user-audit, остальные — в *-sys-audit, а для *-sys-audit срабатывает политика 90 дней.
