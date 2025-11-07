@@ -1,0 +1,634 @@
+{
+	"info": {
+		"_postman_id": "b4393dab-2fa7-4eb9-a001-998f0a93358b",
+		"name": "ERABASIS-1556",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16571351",
+		"_collection_link": "https://khoroshkov-7517.postman.co/workspace/khoroshkov-Workspace~a1be0d6b-8325-4193-8c44-124cc20d876d/collection/16571351-b4393dab-2fa7-4eb9-a001-998f0a93358b?action=share&source=collection_link&creator=16571351"
+	},
+	"item": [
+		{
+			"name": "1. index_ep-dev-k8s_evoera",
+			"item": [
+				{
+					"name": "1. Создание шаблона",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"index_patterns\": [\"index_ep-dev-k8s_evoera-*\"],\n  \"priority\": 1,\n  \"template\": {\n    \"settings\": {\n      \"number_of_shards\": 1,\n      \"number_of_replicas\": 1\n    },\n    \"mappings\": {\n      \"properties\": {\n        \"@timestamp\"            : { \"type\": \"date\" },\n        \"application_timestamp\" : { \"type\": \"date\" },\n        \"level\"                 : { \"type\": \"keyword\" },\n        \"application_name\"      : { \"type\": \"keyword\" },\n        \"application_version\"   : { \"type\": \"keyword\" },\n        \"fqdn\"                  : { \"type\": \"keyword\" },\n        \"pid\"                   : { \"type\": \"integer\" },\n        \"request_id\"            : { \"type\": \"keyword\" },\n        \"user_id\"               : { \"type\": \"keyword\" },\n        \"user_login\"            : { \"type\": \"keyword\" },\n        \"user_fio\"              : { \"type\": \"keyword\" },\n        \"user_ip\"               : { \"type\": \"ip\" },\n        \"aomn_id\"               : { \"type\": \"keyword\" },\n        \"aomn_shortname\"        : { \"type\": \"keyword\" },\n        \"category\"              : { \"type\": \"keyword\" },\n        \"document\"              : { \"type\": \"text\" },\n        \"operation\"             : { \"type\": \"keyword\" },\n        \"class\"                 : { \"type\": \"keyword\" },\n        \"message\"               : { \"type\": \"text\" }\n\n      }\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/_index_template/index_ep-dev-k8s_evoera_template",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"_index_template",
+								"index_ep-dev-k8s_evoera_template"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Создание индекса",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-06.11.2025",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"index_ep-dev-k8s_evoera-06.11.2025"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Добавление документа",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"application_timestamp\": \"2025-11-06T20:44:05.598533Z\",\r\n  \"level\": \"INFO\",\r\n  \"application_name\": \"fluentbit_local\",\r\n  \"application_version\": \"2517\",\r\n  \"fqdn\": \"MacBook-Air-Sergey.local\",\r\n  \"pid\": \"58497\",\r\n  \"user_fio\": \"Testov\",\r\n  \"category\": \"USER_AUDIT\",\r\n  \"user_id\": \"00000000-0000-0000-0000-000000000001\",\r\n  \"operation\": \"Редактирование записей\",\r\n  \"aomn_shortname\": \"Qwerty\",\r\n  \"document\": \"ПСП и привязка ТПС – ПСП.ПСП – физические\",\r\n  \"aomn_id\": \"1\",\r\n  \"user_login\": \"test\",\r\n  \"request_id\": \"1919801d-bf3d-4cc7-9953-af78f573decd\",\r\n  \"class\": \"fluentbit.controller.FluentBitController\",\r\n  \"message\": \"Обновить ПСП по ID\",\r\n  \"@timestamp\": \"2025-11-06T12:31:00Z\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-06.11.2025/_doc",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"index_ep-dev-k8s_evoera-06.11.2025",
+								"_doc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Проверить существование индекса",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-06.11.2025",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"index_ep-dev-k8s_evoera-06.11.2025"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Проверить существование документа",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"query\": {\r\n    \"term\": {\r\n      \"@timestamp\": \"2025-11-06T12:31:00Z\"\r\n    }\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-06.11.2025/_search",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"index_ep-dev-k8s_evoera-06.11.2025",
+								"_search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Посмотреть все индексы",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"query\": {\r\n    \"term\": {\r\n      \"@timestamp\": \"2025-11-06T12:31:00Z\"\r\n    }\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/_cat/indices?v",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"_cat",
+								"indices"
+							],
+							"query": [
+								{
+									"key": "v",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. index_ep-dev-k8s_evoera-user-audit",
+			"item": [
+				{
+					"name": "1. Создание шаблона",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"index_patterns\": [\"index_ep-dev-k8s_evoera-user-audit-*\"],\n  \"priority\": 100,\n  \"template\": {\n    \"settings\": {\n      \"number_of_shards\": 1,\n      \"number_of_replicas\": 1\n    },\n    \"mappings\": {\n      \"properties\": {\n        \"@timestamp\"            : { \"type\": \"date\" },\n        \"application_timestamp\" : { \"type\": \"date\" },\n        \"level\"                 : { \"type\": \"keyword\" },\n        \"application_name\"      : { \"type\": \"keyword\" },\n        \"application_version\"   : { \"type\": \"keyword\" },\n        \"fqdn\"                  : { \"type\": \"keyword\" },\n        \"pid\"                   : { \"type\": \"integer\" },\n        \"request_id\"            : { \"type\": \"keyword\" },\n        \"user_id\"               : { \"type\": \"keyword\" },\n        \"user_login\"            : { \"type\": \"keyword\" },\n        \"user_fio\"              : { \"type\": \"keyword\" },\n        \"user_ip\"               : { \"type\": \"ip\" },\n        \"aomn_id\"               : { \"type\": \"keyword\" },\n        \"aomn_shortname\"        : { \"type\": \"keyword\" },\n        \"category\"              : { \"type\": \"keyword\" },\n        \"document\"              : { \"type\": \"text\" },\n        \"operation\"             : { \"type\": \"keyword\" },\n        \"class\"                 : { \"type\": \"keyword\" },\n        \"message\"               : { \"type\": \"text\" }\n      }\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/_index_template/index_ep-dev-k8s_evoera-user-audit_template",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"_index_template",
+								"index_ep-dev-k8s_evoera-user-audit_template"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Создание индекса",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-user-audit-06.11.2025",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"index_ep-dev-k8s_evoera-user-audit-06.11.2025"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Добавление документа",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"application_timestamp\": \"2025-11-06T20:44:05.598533Z\",\r\n  \"level\": \"INFO\",\r\n  \"application_name\": \"fluentbit_local\",\r\n  \"application_version\": \"2517\",\r\n  \"fqdn\": \"MacBook-Air-Sergey.local\",\r\n  \"pid\": \"58497\",\r\n  \"user_fio\": \"Testov\",\r\n  \"category\": \"USER_AUDIT\",\r\n  \"user_id\": \"00000000-0000-0000-0000-000000000001\",\r\n  \"operation\": \"Редактирование записей\",\r\n  \"aomn_shortname\": \"Qwerty\",\r\n  \"document\": \"ПСП и привязка ТПС – ПСП.ПСП – физические\",\r\n  \"aomn_id\": \"1\",\r\n  \"user_login\": \"test\",\r\n  \"request_id\": \"1919801d-bf3d-4cc7-9953-af78f573decd\",\r\n  \"class\": \"fluentbit.controller.FluentBitController\",\r\n  \"message\": \"Обновить ПСП по ID\",\r\n  \"@timestamp\": \"2025-11-06T12:31:00Z\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-user-audit-06.11.2025/_doc",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"index_ep-dev-k8s_evoera-user-audit-06.11.2025",
+								"_doc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Проверить существование индекса",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-user-audit-06.11.2025",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"index_ep-dev-k8s_evoera-user-audit-06.11.2025"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Проверить существование документа",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"query\": {\r\n    \"term\": {\r\n      \"@timestamp\": \"2025-11-06T12:31:00Z\"\r\n    }\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-user-audit-06.11.2025/_search",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"index_ep-dev-k8s_evoera-user-audit-06.11.2025",
+								"_search"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. index_ep-dev-k8s_evoera-system-audit",
+			"item": [
+				{
+					"name": "1. Создание шаблона",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"index_patterns\": [\"index_ep-dev-k8s_evoera-sys-audit-*\"],\n  \"priority\": 100,\n  \"template\": {\n    \"settings\": {\n      \"number_of_shards\": 1,\n      \"number_of_replicas\": 1\n    },\n    \"mappings\": {\n      \"properties\": {\n        \"@timestamp\"            : { \"type\": \"date\" },\n        \"application_timestamp\" : { \"type\": \"date\" },\n        \"level\"                 : { \"type\": \"keyword\" },\n        \"application_name\"      : { \"type\": \"keyword\" },\n        \"application_version\"   : { \"type\": \"keyword\" },\n        \"fqdn\"                  : { \"type\": \"keyword\" },\n        \"pid\"                   : { \"type\": \"integer\" },\n        \"request_id\"            : { \"type\": \"keyword\" },\n        \"user_id\"               : { \"type\": \"keyword\" },\n        \"user_login\"            : { \"type\": \"keyword\" },\n        \"user_fio\"              : { \"type\": \"keyword\" },\n        \"user_ip\"               : { \"type\": \"ip\" },\n        \"aomn_id\"               : { \"type\": \"keyword\" },\n        \"aomn_shortname\"        : { \"type\": \"keyword\" },\n        \"category\"              : { \"type\": \"keyword\" },\n        \"document\"              : { \"type\": \"text\" },\n        \"operation\"             : { \"type\": \"keyword\" },\n        \"class\"                 : { \"type\": \"keyword\" },\n        \"message\"               : { \"type\": \"text\" }\n      }\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/_index_template/index_ep-dev-k8s_evoera-sys-audit_template",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"_index_template",
+								"index_ep-dev-k8s_evoera-sys-audit_template"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Создание индекса",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-sys-audit-06.11.2025",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"index_ep-dev-k8s_evoera-sys-audit-06.11.2025"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Добавление документа",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"application_timestamp\": \"2025-11-06T20:44:05.598533Z\",\r\n  \"level\": \"INFO\",\r\n  \"application_name\": \"fluentbit_local\",\r\n  \"application_version\": \"2517\",\r\n  \"fqdn\": \"MacBook-Air-Sergey.local\",\r\n  \"pid\": \"58497\",\r\n  \"user_fio\": \"Testov\",\r\n  \"category\": \"USER_AUDIT\",\r\n  \"user_id\": \"00000000-0000-0000-0000-000000000001\",\r\n  \"operation\": \"Редактирование записей\",\r\n  \"aomn_shortname\": \"Qwerty\",\r\n  \"document\": \"ПСП и привязка ТПС – ПСП.ПСП – физические\",\r\n  \"aomn_id\": \"1\",\r\n  \"user_login\": \"test\",\r\n  \"request_id\": \"1919801d-bf3d-4cc7-9953-af78f573decd\",\r\n  \"class\": \"fluentbit.controller.FluentBitController\",\r\n  \"message\": \"Обновить ПСП по ID\",\r\n  \"@timestamp\": \"2025-11-06T12:31:00Z\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-sys-audit-06.11.2025/_doc",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"index_ep-dev-k8s_evoera-sys-audit-06.11.2025",
+								"_doc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Проверить существование индекса",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-sys-audit-06.11.2025",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"index_ep-dev-k8s_evoera-sys-audit-06.11.2025"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Проверить существование документа",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"query\": {\r\n    \"term\": {\r\n      \"@timestamp\": \"2025-11-06T12:31:00Z\"\r\n    }\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-sys-audit-06.11.2025/_search",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"index_ep-dev-k8s_evoera-sys-audit-06.11.2025",
+								"_search"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
