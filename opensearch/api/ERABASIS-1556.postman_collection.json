@@ -148,186 +148,6 @@
 							"response": []
 						}
 					]
-				},
-				{
-					"name": "ТЕСТ НА политику запросы пока не трогал",
-					"item": [
-						{
-							"name": "1. Создание минутной",
-							"request": {
-								"auth": {
-									"type": "basic",
-									"basic": [
-										{
-											"key": "username",
-											"value": "",
-											"type": "string"
-										},
-										{
-											"key": "password",
-											"value": "",
-											"type": "string"
-										}
-									]
-								},
-								"method": "PUT",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n  \"policy\": {\r\n    \"description\": \"ТЕСТ удаление через 1 минуту\",\r\n    \"default_state\": \"hot\",\r\n    \"schema_version\": 1,\r\n    \"states\": [\r\n      {\r\n        \"name\": \"hot\",\r\n        \"actions\": [],\r\n        \"transitions\": [\r\n          {\r\n            \"state_name\": \"delete\",\r\n            \"conditions\": { \"min_index_age\": \"1m\" }\r\n          }\r\n        ]\r\n      },\r\n      {\r\n        \"name\": \"delete\",\r\n        \"actions\": [ { \"delete\": {} } ]\r\n      }\r\n    ],\r\n    \"ism_template\": {\r\n      \"index_patterns\": [ \"index_ep-dev-k8s_evoera-sys-audit-*\" ],\r\n      \"priority\": 200\r\n    }\r\n  }\r\n}\r\n",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "http://localhost:9200/_plugins/_ism/policies/delete_after_1_minute",
-									"protocol": "http",
-									"host": [
-										"localhost"
-									],
-									"port": "9200",
-									"path": [
-										"_plugins",
-										"_ism",
-										"policies",
-										"delete_after_1_minute"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "2. Проверить что создалась",
-							"protocolProfileBehavior": {
-								"disableBodyPruning": true
-							},
-							"request": {
-								"auth": {
-									"type": "basic",
-									"basic": [
-										{
-											"key": "username",
-											"value": "",
-											"type": "string"
-										},
-										{
-											"key": "password",
-											"value": "",
-											"type": "string"
-										}
-									]
-								},
-								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "http://localhost:9200/_plugins/_ism/policies/delete_after_1_minute?pretty",
-									"protocol": "http",
-									"host": [
-										"localhost"
-									],
-									"port": "9200",
-									"path": [
-										"_plugins",
-										"_ism",
-										"policies",
-										"delete_after_1_minute"
-									],
-									"query": [
-										{
-											"key": "pretty",
-											"value": null
-										}
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "3. Добавление еще одной",
-							"request": {
-								"auth": {
-									"type": "basic",
-									"basic": [
-										{
-											"key": "username",
-											"value": "",
-											"type": "string"
-										},
-										{
-											"key": "password",
-											"value": "",
-											"type": "string"
-										}
-									]
-								},
-								"method": "PUT",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n  \"policy\": {\r\n    \"description\": \"ТЕСТ Удаление индекса через 1 минуту после создания\",\r\n    \"default_state\": \"hot\",\r\n    \"schema_version\": 24,\r\n    \"states\": [\r\n      {\r\n        \"name\": \"hot\",\r\n        \"actions\": [],\r\n        \"transitions\": [\r\n          {\r\n            \"state_name\": \"delete\",\r\n            \"conditions\": {\r\n              \"min_index_age\": \"1m\"\r\n            }\r\n          }\r\n        ]\r\n      },\r\n      {\r\n        \"name\": \"delete\",\r\n        \"actions\": [\r\n          {\r\n            \"retry\": {\r\n              \"count\": 3,\r\n              \"backoff\": \"exponential\",\r\n              \"delay\": \"1m\"\r\n            },\r\n            \"delete\": {}\r\n          }\r\n        ],\r\n        \"transitions\": []\r\n      }\r\n    ],\r\n    \"ism_template\": [\r\n      {\r\n        \"index_patterns\": [\r\n          \"index_evoera-int_incoming_message-*\",\r\n          \"index_evoera-int_integration_script_log-*\",\r\n          \"index_evoera-int_notification-*\",\r\n          \"index_ep-dev-k8s_evoera-sys-audit-*\"\r\n        ],\r\n        \"priority\": 100\r\n      }\r\n    ]\r\n  }\r\n}\r\n",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "http://localhost:9200/_plugins/_ism/policies/delete_after_1_minute?if_seq_no=134&if_primary_term=9",
-									"protocol": "http",
-									"host": [
-										"localhost"
-									],
-									"port": "9200",
-									"path": [
-										"_plugins",
-										"_ism",
-										"policies",
-										"delete_after_1_minute"
-									],
-									"query": [
-										{
-											"key": "if_seq_no",
-											"value": "134"
-										},
-										{
-											"key": "if_primary_term",
-											"value": "9"
-										}
-									]
-								}
-							},
-							"response": []
-						}
-					]
 				}
 			]
 		},
@@ -985,6 +805,66 @@
 							"path": [
 								"index_ep-dev-k8s_evoera-sys-audit-02.11.2025",
 								"_settings"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Clear",
+			"item": [
+				{
+					"name": "1. Посмотреть все индексы",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9200/_cat/indices?v",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"_cat",
+								"indices"
+							],
+							"query": [
+								{
+									"key": "v",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Удалить наши индексы",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-*,index_ep-dev-k8s_evoera-user-audit-*,index_ep-dev-k8s_evoera-sys-audit-*?expand_wildcards=all&ignore_unavailable=true",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"index_ep-dev-k8s_evoera-*,index_ep-dev-k8s_evoera-user-audit-*,index_ep-dev-k8s_evoera-sys-audit-*"
+							],
+							"query": [
+								{
+									"key": "expand_wildcards",
+									"value": "all"
+								},
+								{
+									"key": "ignore_unavailable",
+									"value": "true"
+								}
 							]
 						}
 					},
