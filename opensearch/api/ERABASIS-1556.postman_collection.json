@@ -8,6 +8,330 @@
 	},
 	"item": [
 		{
+			"name": "0. Политики и проверки",
+			"item": [
+				{
+					"name": "1.  У опенсерча поменять настройку частоты вызова политики",
+					"item": [
+						{
+							"name": "1. PUT",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"persistent\": {\n    \"plugins.index_state_management.job_interval\": 1,\n    \"plugins.index_state_management.jitter\": 0\n  }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:9200/_cluster/settings",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "9200",
+									"path": [
+										"_cluster",
+										"settings"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2. GET",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"persistent\": {\n    \"plugins.index_state_management.job_interval\": 1,\n    \"plugins.index_state_management.jitter\": 0\n  }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:9200/_cluster/settings?include_defaults=true&filter_path=**.index_state_management.*",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "9200",
+									"path": [
+										"_cluster",
+										"settings"
+									],
+									"query": [
+										{
+											"key": "include_defaults",
+											"value": "true"
+										},
+										{
+											"key": "filter_path",
+											"value": "**.index_state_management.*"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "TEST - политика на одну минуту",
+					"item": [
+						{
+							"name": "1. Создание одной из первых политики разбивки",
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"policy\": {\r\n    \"description\": \"Удаление индекса через 1 минутку после создания\",\r\n    \"default_state\": \"hot\",\r\n    \"schema_version\": 1,\r\n    \"states\": [\r\n      {\r\n        \"name\": \"hot\",\r\n        \"actions\": [],\r\n        \"transitions\": [\r\n          {\r\n            \"state_name\": \"delete\",\r\n            \"conditions\": {\r\n              \"min_index_age\": \"1m\"\r\n            }\r\n          }\r\n        ]\r\n      },\r\n      {\r\n        \"name\": \"delete\",\r\n        \"actions\": [\r\n          {\r\n            \"delete\": {}\r\n          }\r\n        ]\r\n      }\r\n    ],\r\n    \"ism_template\": {\r\n      \"index_patterns\": [\r\n        \"index_ep-dev-k8s_evoera-sys-audit-*\"\r\n        ],\r\n      \"priority\": 100\r\n    }\r\n  }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:9200/_plugins/_ism/policies/delete_after_1_minute?pretty",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "9200",
+									"path": [
+										"_plugins",
+										"_ism",
+										"policies",
+										"delete_after_1_minute"
+									],
+									"query": [
+										{
+											"key": "pretty",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "ТЕСТ НА политику запросы пока не трогал",
+					"item": [
+						{
+							"name": "1. Создание минутной",
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"policy\": {\r\n    \"description\": \"ТЕСТ удаление через 1 минуту\",\r\n    \"default_state\": \"hot\",\r\n    \"schema_version\": 1,\r\n    \"states\": [\r\n      {\r\n        \"name\": \"hot\",\r\n        \"actions\": [],\r\n        \"transitions\": [\r\n          {\r\n            \"state_name\": \"delete\",\r\n            \"conditions\": { \"min_index_age\": \"1m\" }\r\n          }\r\n        ]\r\n      },\r\n      {\r\n        \"name\": \"delete\",\r\n        \"actions\": [ { \"delete\": {} } ]\r\n      }\r\n    ],\r\n    \"ism_template\": {\r\n      \"index_patterns\": [ \"index_ep-dev-k8s_evoera-sys-audit-*\" ],\r\n      \"priority\": 200\r\n    }\r\n  }\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:9200/_plugins/_ism/policies/delete_after_1_minute",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "9200",
+									"path": [
+										"_plugins",
+										"_ism",
+										"policies",
+										"delete_after_1_minute"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2. Проверить что создалась",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:9200/_plugins/_ism/policies/delete_after_1_minute?pretty",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "9200",
+									"path": [
+										"_plugins",
+										"_ism",
+										"policies",
+										"delete_after_1_minute"
+									],
+									"query": [
+										{
+											"key": "pretty",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "3. Добавление еще одной",
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "username",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"policy\": {\r\n    \"description\": \"ТЕСТ Удаление индекса через 1 минуту после создания\",\r\n    \"default_state\": \"hot\",\r\n    \"schema_version\": 24,\r\n    \"states\": [\r\n      {\r\n        \"name\": \"hot\",\r\n        \"actions\": [],\r\n        \"transitions\": [\r\n          {\r\n            \"state_name\": \"delete\",\r\n            \"conditions\": {\r\n              \"min_index_age\": \"1m\"\r\n            }\r\n          }\r\n        ]\r\n      },\r\n      {\r\n        \"name\": \"delete\",\r\n        \"actions\": [\r\n          {\r\n            \"retry\": {\r\n              \"count\": 3,\r\n              \"backoff\": \"exponential\",\r\n              \"delay\": \"1m\"\r\n            },\r\n            \"delete\": {}\r\n          }\r\n        ],\r\n        \"transitions\": []\r\n      }\r\n    ],\r\n    \"ism_template\": [\r\n      {\r\n        \"index_patterns\": [\r\n          \"index_evoera-int_incoming_message-*\",\r\n          \"index_evoera-int_integration_script_log-*\",\r\n          \"index_evoera-int_notification-*\",\r\n          \"index_ep-dev-k8s_evoera-sys-audit-*\"\r\n        ],\r\n        \"priority\": 100\r\n      }\r\n    ]\r\n  }\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:9200/_plugins/_ism/policies/delete_after_1_minute?if_seq_no=134&if_primary_term=9",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "9200",
+									"path": [
+										"_plugins",
+										"_ism",
+										"policies",
+										"delete_after_1_minute"
+									],
+									"query": [
+										{
+											"key": "if_seq_no",
+											"value": "134"
+										},
+										{
+											"key": "if_primary_term",
+											"value": "9"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
 			"name": "1. index_ep-dev-k8s_evoera",
 			"item": [
 				{
@@ -462,7 +786,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"index_patterns\": [\"index_ep-dev-k8s_evoera-sys-audit-*\"],\n  \"priority\": 100,\n  \"template\": {\n    \"settings\": {\n      \"number_of_shards\": 1,\n      \"number_of_replicas\": 1\n    },\n    \"mappings\": {\n      \"properties\": {\n        \"@timestamp\"            : { \"type\": \"date\" },\n        \"application_timestamp\" : { \"type\": \"date\" },\n        \"level\"                 : { \"type\": \"keyword\" },\n        \"application_name\"      : { \"type\": \"keyword\" },\n        \"application_version\"   : { \"type\": \"keyword\" },\n        \"fqdn\"                  : { \"type\": \"keyword\" },\n        \"pid\"                   : { \"type\": \"integer\" },\n        \"request_id\"            : { \"type\": \"keyword\" },\n        \"user_id\"               : { \"type\": \"keyword\" },\n        \"user_login\"            : { \"type\": \"keyword\" },\n        \"user_fio\"              : { \"type\": \"keyword\" },\n        \"user_ip\"               : { \"type\": \"ip\" },\n        \"aomn_id\"               : { \"type\": \"keyword\" },\n        \"aomn_shortname\"        : { \"type\": \"keyword\" },\n        \"category\"              : { \"type\": \"keyword\" },\n        \"document\"              : { \"type\": \"text\" },\n        \"operation\"             : { \"type\": \"keyword\" },\n        \"class\"                 : { \"type\": \"keyword\" },\n        \"message\"               : { \"type\": \"text\" }\n      }\n    }\n  }\n}",
+							"raw": "{\n  \"index_patterns\": [\"index_ep-dev-k8s_evoera-sys-audit-*\"],\n  \"priority\": 1,\n  \"template\": {\n    \"settings\": {\n      \"number_of_shards\": 1,\n      \"number_of_replicas\": 1,\n      \"index.plugins.index_state_management.policy_id\": \"delete_after_1_minute\"\n    },\n    \"mappings\": {\n      \"properties\": {\n        \"@timestamp\"            : { \"type\": \"date\" },\n        \"application_timestamp\" : { \"type\": \"date\" },\n        \"level\"                 : { \"type\": \"keyword\" },\n        \"application_name\"      : { \"type\": \"keyword\" },\n        \"application_version\"   : { \"type\": \"keyword\" },\n        \"fqdn\"                  : { \"type\": \"keyword\" },\n        \"pid\"                   : { \"type\": \"integer\" },\n        \"request_id\"            : { \"type\": \"keyword\" },\n        \"user_id\"               : { \"type\": \"keyword\" },\n        \"user_login\"            : { \"type\": \"keyword\" },\n        \"user_fio\"              : { \"type\": \"keyword\" },\n        \"user_ip\"               : { \"type\": \"ip\" },\n        \"aomn_id\"               : { \"type\": \"keyword\" },\n        \"aomn_shortname\"        : { \"type\": \"keyword\" },\n        \"category\"              : { \"type\": \"keyword\" },\n        \"document\"              : { \"type\": \"text\" },\n        \"operation\"             : { \"type\": \"keyword\" },\n        \"class\"                 : { \"type\": \"keyword\" },\n        \"message\"               : { \"type\": \"text\" }\n      }\n    }\n  }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -505,14 +829,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-sys-audit-06.11.2025",
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-sys-audit-02.11.2025",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "9200",
 							"path": [
-								"index_ep-dev-k8s_evoera-sys-audit-06.11.2025"
+								"index_ep-dev-k8s_evoera-sys-audit-02.11.2025"
 							]
 						}
 					},
@@ -531,7 +855,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"application_timestamp\": \"2025-11-06T20:44:05.598533Z\",\r\n  \"level\": \"INFO\",\r\n  \"application_name\": \"fluentbit_local\",\r\n  \"application_version\": \"2517\",\r\n  \"fqdn\": \"MacBook-Air-Sergey.local\",\r\n  \"pid\": \"58497\",\r\n  \"user_fio\": \"Testov\",\r\n  \"category\": \"USER_AUDIT\",\r\n  \"user_id\": \"00000000-0000-0000-0000-000000000001\",\r\n  \"operation\": \"Редактирование записей\",\r\n  \"aomn_shortname\": \"Qwerty\",\r\n  \"document\": \"ПСП и привязка ТПС – ПСП.ПСП – физические\",\r\n  \"aomn_id\": \"1\",\r\n  \"user_login\": \"test\",\r\n  \"request_id\": \"1919801d-bf3d-4cc7-9953-af78f573decd\",\r\n  \"class\": \"fluentbit.controller.FluentBitController\",\r\n  \"message\": \"Обновить ПСП по ID\",\r\n  \"@timestamp\": \"2025-11-06T12:31:00Z\"\r\n}\r\n",
+							"raw": "{\r\n  \"application_timestamp\": \"2025-11-01T20:44:05.598533Z\",\r\n  \"level\": \"INFO\",\r\n  \"application_name\": \"fluentbit_local\",\r\n  \"application_version\": \"2517\",\r\n  \"fqdn\": \"MacBook-Air-Sergey.local\",\r\n  \"pid\": \"58497\",\r\n  \"user_fio\": \"Testov\",\r\n  \"category\": \"USER_AUDIT\",\r\n  \"user_id\": \"00000000-0000-0000-0000-000000000001\",\r\n  \"operation\": \"Редактирование записей\",\r\n  \"aomn_shortname\": \"Qwerty\",\r\n  \"document\": \"ПСП и привязка ТПС – ПСП.ПСП – физические\",\r\n  \"aomn_id\": \"1\",\r\n  \"user_login\": \"test\",\r\n  \"request_id\": \"1919801d-bf3d-4cc7-9953-af78f573decd\",\r\n  \"class\": \"fluentbit.controller.FluentBitController\",\r\n  \"message\": \"Обновить ПСП по ID\",\r\n  \"@timestamp\": \"2025-11-01T12:31:00Z\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -539,14 +863,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-sys-audit-06.11.2025/_doc",
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-sys-audit-02.11.2025/_doc",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "9200",
 							"path": [
-								"index_ep-dev-k8s_evoera-sys-audit-06.11.2025",
+								"index_ep-dev-k8s_evoera-sys-audit-02.11.2025",
 								"_doc"
 							]
 						}
@@ -577,14 +901,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-sys-audit-06.11.2025",
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-sys-audit-02.11.2025",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "9200",
 							"path": [
-								"index_ep-dev-k8s_evoera-sys-audit-06.11.2025"
+								"index_ep-dev-k8s_evoera-sys-audit-02.11.2025"
 							]
 						}
 					},
@@ -606,7 +930,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"query\": {\r\n    \"term\": {\r\n      \"@timestamp\": \"2025-11-06T12:31:00Z\"\r\n    }\r\n  }\r\n}",
+							"raw": "{\r\n  \"query\": {\r\n    \"term\": {\r\n      \"@timestamp\": \"2025-11-01T12:31:00Z\"\r\n    }\r\n  }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -614,15 +938,53 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-sys-audit-06.11.2025/_search",
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-sys-audit-02.11.2025/_search",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "9200",
 							"path": [
-								"index_ep-dev-k8s_evoera-sys-audit-06.11.2025",
+								"index_ep-dev-k8s_evoera-sys-audit-02.11.2025",
 								"_search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Проверить, что политика применилась к индексу",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/index_ep-dev-k8s_evoera-sys-audit-02.11.2025/_settings",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"index_ep-dev-k8s_evoera-sys-audit-02.11.2025",
+								"_settings"
 							]
 						}
 					},
